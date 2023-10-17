@@ -14,158 +14,6 @@ const {
 } = require("../models/customer.model");
 
 module.exports = {
-  registerCustomer: async (req, res) => {
-    try {
-      let customerData = req.body;
-
-      customerData &&
-        (await customerRegisterSchema.validate(customerData, {
-          abortEarly: false,
-        }));
-
-      let customer = await Customer.findOne({ email: customerData?.email });
-
-      // validate email exist
-      if (customer) {
-        res.status(400).json({
-          status: "fail",
-          error: "email already exist",
-        });
-      } else {
-        // validate password and confirmPassword match
-        if (customerData?.password != customerData?.confirmPassword) {
-          res.status(400).json({
-            status: "fail",
-            error: "Password and Confirm Password must same",
-          });
-        } else {
-          const salt = await bcrypt.genSalt(Number(process.env.SALT));
-          const hashpswd = await bcrypt.hash(customerData?.password, salt);
-          let requestData = {
-            name: customerData?.name,
-            email: customerData?.email,
-            password: hashpswd,
-          };
-
-          customer = new Customer(requestData);
-
-          const result = await customer.save();
-
-          res.status(200).send({
-            status: "success",
-            message: "Customer added Successfully",
-            data: result,
-          });
-        }
-      }
-    } catch (error) {
-      if (error.name === "ValidationError") {
-        const validationErrors = {};
-
-        error.inner &&
-          error.inner.length > 0 &&
-          error.inner.forEach((validationError) => {
-            validationErrors[validationError.path] = validationError.message;
-          });
-
-        const entries = Object.entries(validationErrors);
-        entries &&
-          entries.length > 0 &&
-          res.status(400).json({
-            status: "fail",
-            error: entries[0][1],
-          });
-      } else {
-        console.log("internal server error", error);
-        res.status(500).json({
-          status: "fail",
-          error: `Internal server Error: ${error}`,
-        });
-      }
-    }
-  },
-
-  // Customer login controller
-  loginCustomer: async (req, res) => {
-    try {
-      const customerData = req.body;
-
-      customerData &&
-        (await customerLoginSchema.validate(customerData, {
-          abortEarly: false,
-        }));
-      const { email, password } = req.body;
-      let customer = await Customer.findOne({ email: email });
-
-      if (customer != null) {
-        // check given password match with DB password of particular customer OR not and return true/false
-        const isMatch = await bcrypt.compare(password, customer?.password);
-
-        if (customer.email === email && isMatch) {
-          if (customer.status === "active") {
-            // Generate JWT Token
-            const token = jwt.sign(
-              { customerId: customer._id },
-              process.env.JWT_SECRET_KEY,
-              { expiresIn: "2d" }
-            );
-
-            res.setHeader("Authorization", `Bearer ${token}`);
-
-            //remove password field from customer object
-            delete customer?.password;
-            res.status(200).send({
-              status: "success",
-              message: "Login Success",
-              token: token,
-              data: customer,
-            });
-          } else {
-            res.status(400).send({
-              status: "fail",
-              error: "Access Denied by Admin",
-            });
-            console.log("Customer Access Denied by Admin");
-          }
-        } else {
-          res.status(400).json({
-            status: "fail",
-            error: "Email or password is not Valid",
-          });
-        }
-      } else {
-        res.status(400).json({
-          status: "fail",
-          error: "Email or password is not Valid",
-        });
-      }
-    } catch (error) {
-      if (error.name === "ValidationError") {
-        const validationErrors = {};
-
-        error.inner &&
-          error.inner.length > 0 &&
-          error.inner.forEach((validationError) => {
-            validationErrors[validationError.path] = validationError.message;
-          });
-
-        const entries = Object.entries(validationErrors);
-        entries &&
-          entries.length > 0 &&
-          res.status(400).json({
-            status: "fail",
-            error: entries[0][1],
-          });
-      } else {
-        console.log("internal server error", error);
-        res.status(500).json({
-          status: "fail",
-          error: `Internal server Error`,
-        });
-      }
-    }
-  },
-
   // // show  all Customers
   getAllCustomer: async (req, res) => {
     try {
@@ -195,7 +43,7 @@ module.exports = {
 
   getCustomerById: async (req, res) => {
     try {
-      const customerId = req.params?.customerId;
+      const customerId = req?.customerId;
 
       // get desired customer data except password
       const customer = await Customer.findById(customerId, "-password");
@@ -214,10 +62,17 @@ module.exports = {
       }
     } catch (error) {
       console.log("internal server error", error);
-      res.status(500).json({
-        status: "fail",
-        error: `Internal server Error`,
-      });
+      if (error.name === "CastError") {
+        res.status(500).json({
+          status: "fail",
+          error: `Invalid ID fomate `,
+        });
+      } else {
+        res.status(500).json({
+          status: "fail",
+          error: `Internal server Error `,
+        });
+      }
     }
   },
 
@@ -453,6 +308,70 @@ module.exports = {
         status: "fail",
         error: `Internal server Error`,
       });
+    }
+  },
+
+  // ----------------------------Group Controller------------------------
+
+  // // show  all Groups
+  getAllGroup: async (req, res) => {
+    try {
+      // get all groups data
+      let group = await Group.find({});
+
+      if (group) {
+        res.status(200).send({
+          status: "success",
+          message: "Groups got successfully",
+          data: group,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Group not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
+      res.status(500).json({
+        status: "fail",
+        error: `Internal server Error`,
+      });
+    }
+  },
+
+  getGroupById: async (req, res) => {
+    try {
+      const groupId = req.params?.groupId;
+
+      // get desired group data
+      const group = await Group.findById(groupId);
+
+      if (group) {
+        res.status(200).send({
+          status: "success",
+          message: "Group founded",
+          data: group,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Group not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
+      if (error.name === "CastError") {
+        res.status(500).json({
+          status: "fail",
+          error: `Invalid ID fomate `,
+        });
+      } else {
+        res.status(500).json({
+          status: "fail",
+          error: `Internal server Error `,
+        });
+      }
     }
   },
 };
