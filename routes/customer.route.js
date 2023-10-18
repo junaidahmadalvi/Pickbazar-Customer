@@ -29,4 +29,10 @@ router.get("/groups", customerController.getAllGroup);
 // get single group
 router.get("/group/:groupId", customerController.getGroupById);
 
+// <-----Shops--------->
+
+// get all shops
+router.get("/shops", customerController.getAllShops);
+// get single author
+router.get("/shop/:shopId", customerController.getShopById);
 module.exports = router;

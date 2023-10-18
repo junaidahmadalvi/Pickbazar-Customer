@@ -12,6 +12,7 @@ const {
   customerUpdateSchema,
   customerAddressesUpdateSchema,
 } = require("../models/customer.model");
+const { Shop } = require("../models/shop.model");
 
 module.exports = {
   // // show  all Customers
@@ -361,6 +362,69 @@ module.exports = {
       }
     } catch (error) {
       console.log("internal server error", error);
+      if (error.name === "CastError") {
+        res.status(500).json({
+          status: "fail",
+          error: `Invalid ID fomate `,
+        });
+      } else {
+        res.status(500).json({
+          status: "fail",
+          error: `Internal server Error `,
+        });
+      }
+    }
+  },
+
+  // <------------------Shop-------------------->
+
+  // show  all Shops
+  getAllShops: async (req, res) => {
+    try {
+      let shop = await Shop.find({});
+
+      if (shop) {
+        res.status(200).send({
+          status: "success",
+          message: "Shops got successfully",
+          data: shop,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Shop not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
+      res.status(500).json({
+        status: "fail",
+        error: `Internal server Error`,
+      });
+    }
+  },
+
+  getShopById: async (req, res) => {
+    try {
+      const shopId = req.params?.shopId;
+      // get desired shop data
+      const shop = await Shop.findById(shopId);
+
+      if (shop) {
+        res.status(200).send({
+          status: "success",
+          message: "Shop founded",
+          data: shop,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Shop not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
+
       if (error.name === "CastError") {
         res.status(500).json({
           status: "fail",
