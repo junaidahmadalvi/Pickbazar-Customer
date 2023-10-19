@@ -13,7 +13,7 @@ const {
   customerAddressesUpdateSchema,
 } = require("../models/customer.model");
 const { Shop } = require("../models/shop.model");
-
+const { Contact, yupContactSchema } = require("../models/contact.model");
 module.exports = {
   // // show  all Customers
   getAllCustomer: async (req, res) => {
@@ -434,6 +434,58 @@ module.exports = {
         res.status(500).json({
           status: "fail",
           error: `Internal server Error `,
+        });
+      }
+    }
+  },
+
+  // <----------Contact Us------------->
+  //add contact us info for customer
+  addContact: async (req, res) => {
+    try {
+      // debugger;
+
+      let contactData = req.body;
+
+      contactData &&
+        (await yupContactSchema.validate(contactData, {
+          abortEarly: false,
+        }));
+
+      const contact = new Contact(contactData);
+
+      const result = await contact.save();
+      result &&
+        res.status(200).send({
+          status: "success",
+          message: "Contact added Successfully",
+          data: result,
+        });
+    } catch (error) {
+      if (error.name === "ValidationError") {
+        const validationErrors = {};
+
+        error.inner &&
+          error.inner.length > 0 &&
+          error.inner.forEach((validationError) => {
+            validationErrors[validationError.path] = validationError.message;
+          });
+
+        const entries = Object.entries(validationErrors);
+        entries &&
+          entries.length > 0 &&
+          res.status(400).json({
+            status: "fail",
+            error: entries[0][1],
+          });
+
+        console.log("error:---", error);
+        // return res.status(400).json(error?.message);
+      } else {
+        console.log("internal server error", error);
+        res.status(500).json({
+          status: "fail",
+          error: `Internal server Error`,
         });
       }
     }

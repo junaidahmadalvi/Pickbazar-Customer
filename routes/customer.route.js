@@ -35,4 +35,9 @@ router.get("/group/:groupId", customerController.getGroupById);
 router.get("/shops", customerController.getAllShops);
 // get single author
 router.get("/shop/:shopId", customerController.getShopById);
+
+//<-----------Contact Us----------->
+
+router.post("/addContact", customerController.addContact);
+
 module.exports = router;
