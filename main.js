@@ -11,6 +11,7 @@ var bodyParser = require("body-parser");
 
 const customerRoute = require("./routes/customer.route");
 const customerAuth = require("./middleware/customer.auth");
+const customerPublicRoute = require("./routes/public.customer.route");
 
 // DB-Connection
 connection();
@@ -34,6 +35,7 @@ app.get("/", (req, res) => {
 // auth for user-login and register
 app.post("/auth/customerRegister", customerAuth.registerCustomer);
 app.post("/auth/customerLogin", customerAuth.loginCustomer);
+app.use("/public/customer", customerPublicRoute);
 
 // auth Globle middleware
 app.use(customerAuth.authenticateCustomer);

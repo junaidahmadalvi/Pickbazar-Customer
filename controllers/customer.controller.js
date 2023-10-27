@@ -13,6 +13,8 @@ const {
   customerAddressesUpdateSchema,
 } = require("../models/customer.model");
 const { Shop } = require("../models/shop.model");
+const { Product, yupProductSchema } = require("../models/product.model");
+
 const { Contact, yupContactSchema } = require("../models/contact.model");
 module.exports = {
   // // show  all Customers
@@ -425,6 +427,70 @@ module.exports = {
     } catch (error) {
       console.log("internal server error", error);
 
+      if (error.name === "CastError") {
+        res.status(500).json({
+          status: "fail",
+          error: `Invalid ID fomate `,
+        });
+      } else {
+        res.status(500).json({
+          status: "fail",
+          error: `Internal server Error `,
+        });
+      }
+    }
+  },
+
+  // <----------Products------------------------>
+
+  // // show  all Products
+  getAllProduct: async (req, res) => {
+    try {
+      // get all products data
+      let product = await Product.find({});
+
+      if (product) {
+        res.status(200).send({
+          status: "success",
+          message: "Products got successfully",
+          data: product,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Product not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
+      res.status(500).json({
+        status: "fail",
+        error: `Internal server Error`,
+      });
+    }
+  },
+
+  getProductById: async (req, res) => {
+    try {
+      const productId = req.params?.productId;
+
+      // get desired product data
+      const product = await Product.findById(productId);
+
+      if (product) {
+        res.status(200).send({
+          status: "success",
+          message: "Product founded",
+          data: product,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Product not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
       if (error.name === "CastError") {
         res.status(500).json({
           status: "fail",

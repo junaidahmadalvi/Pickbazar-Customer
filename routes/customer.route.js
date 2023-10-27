@@ -21,23 +21,4 @@ router.put("/addresses", customerController.updateCustomerAddresses);
 //endpoint to update customer Password
 router.put("/password", customerController.updateCustomerPassword);
 
-// <------------------Groups------------->
-
-// get all groups
-router.get("/groups", customerController.getAllGroup);
-
-// get single group
-router.get("/group/:groupId", customerController.getGroupById);
-
-// <-----Shops--------->
-
-// get all shops
-router.get("/shops", customerController.getAllShops);
-// get single author
-router.get("/shop/:shopId", customerController.getShopById);
-
-//<-----------Contact Us----------->
-
-router.post("/addContact", customerController.addContact);
-
 module.exports = router;
