@@ -69,56 +69,10 @@ const productModel = new mongoose.Schema(
   { timestamps: true }
 );
 
-//---------- Product Yup(validating schemas)---------
-
-// Yup register product schema
-const yupProductSchema = yup.object().shape({
-  name: yup
-    .string()
-    .required("Name is required")
-    .matches(
-      /^[A-Za-z\s]+$/,
-      "Only alphabets and spaces are allowed in the name"
-    ),
-  groupId: yup
-    .string()
-    .trim()
-    .matches(/^[0-9a-fA-F]{24}$/, "Invalid Group ID format"), // Ensure it's a valid ObjectId
-
-  groupName: yup.string().required("Group Name is required"),
-
-  image: yup.string(),
-
-  description: yup.string(),
-
-  status: yup
-    .string()
-    .required("Status is required")
-    .oneOf(["draft", "publish"], "Invalid status"),
-  productType: yup
-    .string()
-    .oneOf(["simple", "variable"], "Invalid product type"),
-  price: yup.number().required("Price is required"),
-  quantity: yup.number().required("Quantity is required"),
-  categoryId: yup
-    .string()
-    .trim()
-    .matches(/^[0-9a-fA-F]{24}$/, "Invalid Category ID format"), // Ensure it's a valid ObjectId
-  categoryName: yup.string().required("Category name is required"),
-  shopId: yup
-    .string()
-    .trim()
-    .required("ShopId is required")
-    .matches(/^[0-9a-fA-F]{24}$/, "Invalid Shop ID format"), // Ensure it's a valid ObjectId
-  shopName: yup.string(),
-  authorName: yup.string().required("author name is required"),
-  manufacturerName: yup.string().required("manufacterer name is required"),
-});
-
 // <============create collection============>
 const Product = new mongoose.model("Product", productModel);
 
 module.exports = {
   Product,
-  yupProductSchema,
+  productModel,
 };

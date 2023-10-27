@@ -21,4 +21,11 @@ router.put("/addresses", customerController.updateCustomerAddresses);
 //endpoint to update customer Password
 router.put("/password", customerController.updateCustomerPassword);
 
+// <----------Orders------------------------>
+
+// get all order
+router.get("/orders", customerController.getAllOrder);
+// get single order
+router.get("/order/:orderId", customerController.getOrderById);
+
 module.exports = router;

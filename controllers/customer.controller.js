@@ -13,8 +13,8 @@ const {
   customerAddressesUpdateSchema,
 } = require("../models/customer.model");
 const { Shop } = require("../models/shop.model");
-const { Product, yupProductSchema } = require("../models/product.model");
-
+const { Product } = require("../models/product.model");
+const { Order } = require("../models/order.model");
 const { Contact, yupContactSchema } = require("../models/contact.model");
 module.exports = {
   // // show  all Customers
@@ -487,6 +487,75 @@ module.exports = {
         res.status(400).json({
           status: "fail",
           error: "Product not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
+      if (error.name === "CastError") {
+        res.status(500).json({
+          status: "fail",
+          error: `Invalid ID fomate `,
+        });
+      } else {
+        res.status(500).json({
+          status: "fail",
+          error: `Internal server Error `,
+        });
+      }
+    }
+  },
+
+  // <----------Orders------------------------>
+
+  // // show  all Orders
+  getAllOrder: async (req, res) => {
+    try {
+      const customerId = req.customerId;
+      // get all orders data
+      let order = await Order.find({ customerId: customerId });
+
+      if (order) {
+        res.status(200).send({
+          status: "success",
+          message: "Orders got successfully",
+          data: order,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Order not found",
+        });
+      }
+    } catch (error) {
+      console.log("internal server error", error);
+      res.status(500).json({
+        status: "fail",
+        error: `Internal server Error`,
+      });
+    }
+  },
+
+  getOrderById: async (req, res) => {
+    try {
+      const orderId = req.params?.orderId;
+      const customerId = req.customerId;
+
+      // get desired order data
+      const order = await Order.findOne({
+        _id: orderId,
+        customerId: customerId,
+      });
+
+      if (order) {
+        res.status(200).send({
+          status: "success",
+          message: "Order founded",
+          data: order,
+        });
+      } else {
+        res.status(400).json({
+          status: "fail",
+          error: "Order not found",
         });
       }
     } catch (error) {
